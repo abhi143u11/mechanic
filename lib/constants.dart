@@ -12,7 +12,10 @@ const widgetStyle3 =
     TextStyle(fontWeight: FontWeight.bold, fontSize: 22, color: Colors.black);
 const successStyle =
     TextStyle(fontWeight: FontWeight.bold, fontSize: 30, color: Colors.green);
-
+const dataStyle1 =
+    TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.blue);
+const dataStyle2 =
+    TextStyle(fontWeight: FontWeight.w700, fontSize: 24, color: Colors.black);
 //"5e9b4daa8dc1cc46da638b7e" hid;
 //historyId : "5e9a8ce0c0d920127002ced0"
 //"mechaid":"5e99eedadc75c67dae5f8d2e",
@@ -22,3 +25,7 @@ const successStyle =
 //"type":"car",
 //"time":0,
 //"distance":1
+
+
+//Z11bo6lw1wNxrzf3xYs4yOTz  secret key
+//rzp_test_K7nwFgKJ6oD387 key id

@@ -17,36 +17,29 @@ class Mechanic with ChangeNotifier {
   bool _isCancel = false;
   bool _isDone = false;
 
-  bool get isCancel {
-    return _isCancel;
-  }
-
-  bool get isDone {
-    return _isDone;
-  }
-
   final String _userId;
   Mechanic(this._userId);
 
-  bool get indicator {
-    return _indicator;
+  bool get indicator => _indicator;
+  bool get isCancel => _isCancel;
+  bool get isDone => _isDone;
+  String get name => _name;
+  double get distance => _distance;
+  double get time => _time;
+  double get latitude => _latitude;
+  double get longitude => _longitude;
+
+  void setIndicator(bool value){
+    _indicator = value;
+    notifyListeners();
   }
 
-  String get name {
-    return _name;
+  void setDone(bool value){
+    _isDone = false;
   }
 
-  double get distance {
-    return _distance;
-  }
 
-  double get time {
-    return _time;
-  }
-
-  Future<void> checkPoint(String userId) async {
-    print(_userId);
-    print("mechId $userId");
+  Future<void> checkPoint() async {
     try {
       final response = await http.post("$BASE_URL/mecha/checkpoint",
           headers: {
@@ -54,12 +47,9 @@ class Mechanic with ChangeNotifier {
           },
           body: json.encode({"_id": _userId})); //userId
       if (response.statusCode == 200) {
-        print(response.body);
         final jsonData = jsonDecode(response.body);
-        print(jsonData[0][0]);
         if (jsonData[0][0] == 0) {
           _indicator = false;
-          notifyListeners();
         } else {
           _name = jsonData[1];
           _indicator = true;
@@ -70,8 +60,6 @@ class Mechanic with ChangeNotifier {
           _historyId = jsonData[0][5];
           _distance = jsonData[0][6];
           _time = jsonData[0][7];
-          print("customer check point");
-          notifyListeners();
         }
       } else {
         print(response.body);
@@ -80,6 +68,7 @@ class Mechanic with ChangeNotifier {
     } catch (e) {
       throw e;
     }
+    notifyListeners();
   }
 
   Future<void> mechaReach() async {
@@ -139,9 +128,8 @@ class Mechanic with ChangeNotifier {
             "_id": _historyId,
           }));
       if (response.statusCode == 200) {
-        print("cancel check point");
         _isCancel = jsonDecode(response.body);
-        notifyListeners();
+        if(_isCancel) _indicator = false;
       } else {
         print(response.body);
         print(response.statusCode);
@@ -153,7 +141,6 @@ class Mechanic with ChangeNotifier {
   }
 
   Future<void> donePoint() async {
-    print(_historyId);
     try {
       final response = await http.post("$BASE_URL/mecha/checkpoint/done",
           headers: {
@@ -162,9 +149,8 @@ class Mechanic with ChangeNotifier {
           body: json.encode({"_id": _historyId})); //historyid
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
-        print("done checkpoint succes ${response.body}");
         _isDone = jsonData[0] == 0 ? false : true;
-        notifyListeners();
+        if(_isDone) _indicator = false;
       } else {
         print(response.body);
         print(response.statusCode);
@@ -204,4 +190,9 @@ class Mechanic with ChangeNotifier {
     }
     notifyListeners();
   }
+
+
+
+
+
 }

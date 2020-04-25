@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:mechanic/constants.dart';
 import 'package:mechanic/providers/mechanic.dart';
-import 'package:mechanic/screens/home_screen.dart';
 import 'package:provider/provider.dart';
 
 class DoneScreen extends StatefulWidget {
@@ -13,42 +12,32 @@ class DoneScreen extends StatefulWidget {
 }
 
 class _DoneScreenState extends State<DoneScreen> {
-  bool _isDone = false;
   Timer _timer;
   bool isInit = true;
 
   @override
   void didChangeDependencies() async {
     if (isInit) {
-      _isDone = Provider.of<Mechanic>(context, listen: false).isDone;
-      if (!_isDone) {
-        _timer = Timer.periodic(new Duration(seconds: 2), (_) async {
-          try {
-            await Provider.of<Mechanic>(context, listen: false).donePoint();
-            _isDone = Provider.of<Mechanic>(context, listen: false).isDone;
-            if (_isDone) setState(() {});
-          } catch (e) {
-            print(e.toString());
-            throw e;
-          }
+      final mechanic = Provider.of<Mechanic>(context);
+        _timer = Timer.periodic(new Duration(seconds: 1), (_) async {
+            await mechanic.donePoint();
         });
-      } else {
-        setState(() {});
-      }
     }
     isInit = false;
     super.didChangeDependencies();
   }
 
   @override
-  void deactivate() {
+  void dispose() {
+
     if (_timer == null) return;
     _timer.cancel();
-    super.deactivate();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    bool _isDone = Provider.of<Mechanic>(context).isDone;
     return Scaffold(
       appBar: AppBar(
         title: Text('You Reached '),
@@ -92,8 +81,9 @@ class _DoneScreenState extends State<DoneScreen> {
                 child: RaisedButton(
                   color: Theme.of(context).primaryColor,
                   onPressed: () async {
-                    Navigator.of(context).pushNamedAndRemoveUntil(
-                        HomeScreen.routeName, (Route<dynamic> route) => false);
+                    Provider.of<Mechanic>(context,listen: false).setDone(false);
+                    Provider.of<Mechanic>(context,listen: false).setIndicator(false);
+                    Navigator.of(context).popUntil(ModalRoute.withName('/'));
                   },
                   child: Text(
                     'Move to Home',

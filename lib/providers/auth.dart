@@ -18,36 +18,21 @@ class Auth with ChangeNotifier {
   double _longitude;
   double _latitude;
 
-  String get name {
-    return _name;
-  }
+  String get name => _name;
+  String get email => _email;
+  String get mobile => _mobile;
+  String get errorMsg => _errormsg;
+  bool get isAuth => _userId != null;
+  String get userId => _userId;
+  double get latitude => _latitude;
+  double get longitude => _longitude;
 
-  String get email {
-    return _email;
-  }
-
-  String get mobile {
-    return _mobile;
-  }
-
-  String get errorMsg {
-    return _errormsg;
-  }
-
-  bool get isAuth {
-    print("isauth $_userId");
-    return _userId != null;
-  }
-
-  String get userId {
-    return _userId;
-  }
-
-  Future<void> getLocation() async {
+  Future<Position> getLocation() async {
     Position position = await Geolocator()
-        .getCurrentPosition(desiredAccuracy: LocationAccuracy.low);
+        .getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
     _latitude = position.latitude;
     _longitude = position.longitude;
+    return position;
   }
 
   Future<void> updateLocation() async {
@@ -65,7 +50,6 @@ class Auth with ChangeNotifier {
         ),
       );
       if (response.statusCode == 200) {
-        final jsonData = jsonDecode(response.body);
       } else {
         print(response.body);
         print(response.statusCode);
@@ -88,10 +72,15 @@ class Auth with ChangeNotifier {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         _userId = data[0]['_id'];
+        _name = data[0]['name'];
+        _email = data[0]['email'];
         print("login $_userId");
         print(response.body);
         final prefs = await SharedPreferences.getInstance();
-        prefs.setString("userId", _userId);
+        final userData = json.encode(
+          {'userId': _userId, 'name': _name, 'email': _email},
+        );
+        prefs.setString('userData', userData);
         notifyListeners();
       } else {
         print(response.statusCode);
@@ -139,8 +128,10 @@ class Auth with ChangeNotifier {
         _email = data['email'];
 //        _mobile = data['mobileno'];
         final prefs = await SharedPreferences.getInstance();
-        prefs.setString('userId', _userId);
-        print("signup $_userId");
+        final userData = json.encode(
+          {'userId': _userId, 'name': _name, 'email': _email},
+        );
+        prefs.setString('userData', userData);
         notifyListeners();
       } else {
         print(response.body);
@@ -181,12 +172,14 @@ class Auth with ChangeNotifier {
 
   Future<bool> tryAutoLogin() async {
     final prefs = await SharedPreferences.getInstance();
-    if (!prefs.containsKey('userId')) {
+    if (!prefs.containsKey('userData')) {
       return false;
     }
-    _userId = prefs.getString('userId');
-    print("pref $userId");
-    _userId = userId;
+    final extractedUserData =
+        json.decode(prefs.getString('userData')) as Map<String, Object>;
+    _userId = extractedUserData['userId'];
+    _name = extractedUserData['name'];
+    _email = extractedUserData['email'];
     notifyListeners();
     return true;
   }

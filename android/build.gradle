@@ -3,6 +3,9 @@ buildscript {
     repositories {
         google()
         jcenter()
+        maven {
+            url 'http://download.flutter.io'
+        }
     }
 
     dependencies {
@@ -14,7 +17,7 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
+        jcenter{ url "http://jcenter.bintray.com/"}
     }
 }
 
@@ -29,3 +32,4 @@ subprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+

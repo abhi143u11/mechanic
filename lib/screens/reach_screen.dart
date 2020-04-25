@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:mechanic/constants.dart';
 import 'package:mechanic/providers/mechanic.dart';
 import 'package:mechanic/screens/done_screen.dart';
+import 'package:mechanic/screens/map_screen.dart';
 import 'package:mechanic/widgets/customer_deatils.dart';
 import 'package:provider/provider.dart';
 
@@ -16,57 +17,36 @@ class ReachScreen extends StatefulWidget {
 }
 
 class _ReachScreenState extends State<ReachScreen> {
-  bool _isCancel;
-  Timer _timer;
-  bool isInit = true;
-
-  @override
-  void didChangeDependencies() async {
-    if (isInit) {
-      _isCancel = Provider.of<Mechanic>(context, listen: false).isCancel;
-      if (!_isCancel) {
-        _timer = Timer.periodic(new Duration(seconds: 2), (_) async {
-          try {
-            await Provider.of<Mechanic>(context, listen: false)
-                .mechaCancelCheckPoint();
-            _isCancel = Provider.of<Mechanic>(context, listen: false).isCancel;
-            if (_isCancel)
-              setState(() {
-                _timer.cancel();
-              });
-          } catch (e) {
-            throw e;
-          }
-        });
-      } else {
-        setState(() {
-          _timer.cancel();
-        });
-      }
-    }
-    isInit = false;
-    super.didChangeDependencies();
-  }
-
-  @override
-  void deactivate() {
-    if (_timer == null) return;
-    _timer.cancel();
-    super.deactivate();
-  }
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
+    final mechanic = Provider.of<Mechanic>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text('Mechanic on the way'),
+        backgroundColor: Color(0xfff0f0f0),
+        title: Text('Customer Detail'),
       ),
-      body: Column(
+      body:  mechanic.longitude != null ? Column(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: <Widget>[
-          CustomerDetail(_isCancel),
+          CustomerDetail(mechanic.latitude, mechanic.longitude),
+          RaisedButton(
+            color: Theme.of(context).accentColor,
+            child: Text(
+              'View Route on Map',
+              style: widgetStyle1,
+            ),
+            onPressed: mechanic.isCancel
+                ? null
+                : () {
+                    Navigator.of(context).pushNamed(MapScreen.routeName,
+                        arguments: [mechanic.latitude, mechanic.longitude]);
+                  },
+          ),
           Container(
             margin: EdgeInsets.all(16),
-            child: _isCancel
+            child: mechanic.isCancel
                 ? RaisedButton(
                     padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     onPressed: () {
@@ -86,22 +66,28 @@ class _ReachScreenState extends State<ReachScreen> {
                   ),
           ),
         ],
-      ),
+      ) : Container(),
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         child: Container(
           height: 80.0,
           child: RaisedButton(
             color: Theme.of(context).primaryColor,
-            onPressed: _isCancel
+            onPressed: mechanic.isCancel || _isLoading
                 ? null
                 : () async {
+                    setState(() {
+                      _isLoading = true;
+                    });
                     await Provider.of<Mechanic>(context, listen: false)
                         .mechaReach();
+                    setState(() {
+                      _isLoading=false;
+                    });
                     Navigator.pushNamed(context, DoneScreen.routeName);
                   },
             child: Text(
-              'Plaese Click This Button, Once You Reach Customer\'s Location',
+              _isLoading ? 'Please wait...': 'Plaese Click This Button, Once You Reach Customer\'s Location',
               style: widgetStyle1,
             ),
           ),
