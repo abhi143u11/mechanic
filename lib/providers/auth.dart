@@ -44,8 +44,8 @@ class Auth with ChangeNotifier {
         },
         body: json.encode(
           {
-            "latitude": 28.669155,
-            "longitude": 77.453758,
+            "latitude": latitude !=null ? _latitude : 28.669155,
+            "longitude": longitude !=null ? longitude : 77.453758,
           },
         ),
       );
@@ -118,8 +118,8 @@ class Auth with ChangeNotifier {
             "tacter": mechanic.tacter ? 1 : 0,
             "autoer": mechanic.autoer ? 1 : 0,
             "organisatio": mechanic.org,
-            "latitude": 28.669155,
-            "longitude": 77.453758
+            "latitude": latitude !=null ? _latitude : 28.669155,
+            "longitude": longitude !=null ? longitude : 77.453758,
           }));
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);

@@ -26,7 +26,6 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = false;
   int counter = 0;
 
-
   @override
   initState() {
     super.initState();
@@ -45,20 +44,21 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void didChangeDependencies() async {
     if (isInit) {
+      Provider.of<Auth>(context, listen: false).getLocation();
       final mechanic = Provider.of<Mechanic>(context);
       final data = Provider.of<Mechanic>(context, listen: false);
       Timer.periodic(new Duration(seconds: 2), (timer) async {
         print(timer.tick);
+        Provider.of<Auth>(context, listen: false).updateLocation();
         bool _indicator = mechanic.indicator;
         bool _isCancel = mechanic.isCancel;
-        if(_indicator && counter == 0) {
+        if (_indicator && counter == 0) {
           _showNotificationWithDefaultSound();
           counter = 1;
         }
         if (_isCancel) {
           counter = 0;
-          setState(() {
-          });
+          setState(() {});
         }
         if (_indicator) {
           await data.mechaCancelCheckPoint();
